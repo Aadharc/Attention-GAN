@@ -10,14 +10,44 @@ import numpy as np
 
 
 class CustomDataSet(Dataset):
-    def __init__(self, main_dir_vis, main_dir_ir, transform):
+    def __init__(self, main_dir_vis, main_dir_ir, label_dir_vis, label_dir_ir, transform):
         self.main_dir_vis = main_dir_vis
         self.main_dir_ir = main_dir_ir
+        self.label_dir_vis = label_dir_vis
+        self.label_dir_ir = label_dir_ir
         self.transform = transform
         all_imgs_vis = os.listdir(main_dir_vis)
         all_imgs_ir = os.listdir(main_dir_ir)
+        all_label_vis = os.listdir(label_dir_vis)
+        all_label_ir = os.listdir(label_dir_ir)
         self.total_imgs_vis = natsort.natsorted(all_imgs_vis)
         self.total_imgs_ir = natsort.natsorted(all_imgs_ir)
+        self.total_label_vis = natsort.natsorted(all_label_vis)
+        self.total_label_ir = natsort.natsorted(all_label_ir)
+        self.vis_ground_truth = {}
+        for f in self.total_label_vis:
+            if f.endswith('.txt'):
+                img_name = f.split('.')[0]
+                with open(os.path.join(self.label_dir_vis, f), 'r') as gt_file:
+                    bboxes = []
+                    for line in gt_file:
+                        # bbox = list(map(int, line.strip().split(',')))
+                        bbox = list(map(float, line.strip().split()))
+                        bboxes.append(bbox)
+                    self.vis_ground_truth[img_name] = bboxes
+        # Load the bounding box ground truth data for thermal images
+        self.thermal_ground_truth = {}
+        # for f in os.listdir(thermal_gt_dir):
+        for f in self.total_label_ir:
+            if f.endswith('.txt'):
+                img_name = f.split('.')[0]
+                with open(os.path.join(self.label_dir_ir, f), 'r') as gt_file:
+                    bboxes = []
+                    for line in gt_file:
+                        # bbox = list(map(int, line.strip().split(',')))
+                        bbox = list(map(float, line.strip().split()))
+                        bboxes.append(bbox)
+                    self.thermal_ground_truth[img_name] = bboxes
 
     def __len__(self):
         return len(self.total_imgs_ir)
@@ -33,7 +63,12 @@ class CustomDataSet(Dataset):
         image_ir = image_ir.resize((2700,2160))
         image_ir1 = ImageOps.pad(image_ir, (3840,2160), color="black")
         tensor_image_ir = self.transform(image_ir1)
-        return (tensor_image_vis, tensor_image_ir)
+
+        ir_img_name = self.total_imgs_ir[idx].split('.')[0]
+        vis_img_name = self.total_imgs_vis[idx].split('.')[0]
+        thermal_bboxes = self.thermal_ground_truth[ir_img_name]
+        visual_bboxes = self.vis_ground_truth[vis_img_name]
+        return ({'image_vis' : tensor_image_vis, 'image_ir' : tensor_image_ir, 'target_vis' :(torch.tensor(visual_bboxes, dtype = torch.float32)).shape[0], 'target_ir' : (torch.tensor(thermal_bboxes, dtype=torch.float32)).shape[0]})
 
 # class CustomDataSet(Dataset):
 #     def __init__(self, main_dir_vis, main_dir_ir, transform):
