@@ -173,12 +173,12 @@ def save_some_examples(conv_block, cross_attn, gen, val_loader, epoch, folder):
             y_fake = gen(x, y, attn1, attn2)
             # y_fake = y_fake * 0.5 + 0.5  # remove normalization#
             # y_fake = y_fake  
-            save_image(y_fake, folder + f"Fused/FusedL1_{epoch}.png")
+            save_image(y_fake, folder + f"/Fused/Fused_{epoch}.png")
             # save_image(x * 0.5 + 0.5, folder + f"/input_{epoch}.png")
-            save_image(x, folder + f"VIS/VISL1_{epoch}.png")
-            save_image(y, folder + f"IR/IRL1_{epoch}.png")
-            save_image(attn1, folder + f"attention_map/Attn1_{epoch}.png")
-            save_image(attn2, folder + f"attention_map/Attn2_{epoch}.png")
+            save_image(x, folder + f"/VIS/VIS_{epoch}.png")
+            save_image(y, folder + f"/IR/IR_{epoch}.png")
+            save_image(attn1, folder + f"/attention_map/Attn1_{epoch}.png")
+            save_image(attn2, folder + f"/attention_map/Attn2_{epoch}.png")
             # if epoch == 0:
             #     save_image(y, folder + f"/label_{epoch}.png")
                 # save_image(y * 0.5 + 0.5, folder + f"/label_{epoch}.png")

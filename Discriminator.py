@@ -22,7 +22,7 @@ class Discriminator(nn.Module):
         super().__init__()
         self.initial = nn.Sequential(
             nn.Conv2d(
-                in_channels * 2 + 2,
+                in_channels * 2 + 1,
                 features[0],
                 kernel_size=4,
                 stride=2,
@@ -48,8 +48,8 @@ class Discriminator(nn.Module):
 
         self.model = nn.Sequential(*layers)
 
-    def forward(self, x, y):
-        x = torch.cat([x, y], dim=1)
+    def forward(self, x, y, attn):
+        x = torch.cat([x, y, attn], dim=1)
         x = self.initial(x)
         x = self.model(x)
         return x
@@ -58,8 +58,9 @@ class Discriminator(nn.Module):
 def test():
     x = torch.randn((1, 3, 512, 512))
     y = torch.randn((1, 3, 512, 512))
+    a = torch.randn((1, 1, 512, 512))
     model = Discriminator(in_channels=3)
-    preds = model(x, y)
+    preds = model(x, y, a)
     print(model)
     print(preds.shape)
 
