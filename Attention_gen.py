@@ -95,7 +95,7 @@ class CrossAttention(nn.Module):
         # Combine the attended features from x1 and x2
         combined2 = self.combine_conv(torch.cat((x1, attended2), dim=1))
 
-        return torch.cat((torch.abs(combined1).sum(dim=1).unsqueeze(1), torch.abs(combined2).sum(dim = 1).unsqueeze(1)), dim = 1)
+        return (torch.abs(combined1).sum(dim=1).unsqueeze(1), torch.abs(combined2).sum(dim = 1).unsqueeze(1))
         # return combined1
 
 class convup(nn.Module):
@@ -117,19 +117,6 @@ class convup(nn.Module):
         u4 = self.up4(u3)
         return u4
 
-# class convup(nn.Module):
-#     def __init__(self, in_chan = 128, features = 8):
-#         super().__init__()
-#         self.up1 = block(in_chan, features * 4, down = False, act = "prelu", use_dropout= False)
-#         self.up2 = block(features * 4, features*2, down = False, act = "prelu", use_dropout= False)
-#         self.up3 = block(features*2, features, down = False, act = "prelu", use_dropout= False)
-#         self.up4 = block(features, 3, down = False, act = "prelu", use_dropout= False)
-#     def forward(self, x):
-#         x = self.up1(x)
-#         x = self.up2(x)
-#         x = self.up3(x)
-#         x = self.up4(x)
-#         return x
 
 class Generator(nn.Module):
     def __init__(self, in_chan):
@@ -143,7 +130,7 @@ class Generator(nn.Module):
         enc1 = self.enc(x)
         enc2 = self.enc(y)
         # print("enc", enc1.shape)
-        attn = self.attn(enc1, enc2)
+        attn = self.attn(enc1, enc2)[0]
         print(attn.shape)
         # dec = self.dec(attn, enc1, enc2)
         return attn
